@@ -1,40 +1,43 @@
-# 📋 Hasil Code Review Project Laravel Sederhana
+# 📋 Rencana Pengujian Otomatis (Unit/Feature Test)
 
-Berdasarkan peninjauan terhadap arsitektur dan implementasi kode saat ini, berikut adalah hasil *code review* serta saran perbaikan untuk pengembangan ke depannya:
-
-## 1. 🐳 Arsitektur Docker & Local Development
-**Temuan:**
-Saat ini, file `docker-compose.yaml` pada *service* `app` menggunakan proses *build* dengan instruksi `COPY app/ .` di dalam `Dockerfile`. Tidak ada *volume mount* dari *host* ke *container*.
-**Dampak:**
-Setiap kali Anda mengubah kode (baik itu controller, route, maupun view blade), Anda **harus melakukan rebuild** container agar perubahan tersebut terbaca (`docker-compose up --build`). Ini memperlambat proses *development*.
-**Saran Perbaikan:**
-Tambahkan *bind mount volume* di `docker-compose.yaml` untuk *service* `app`:
-```yaml
-    volumes:
-      - ./app:/var/www/html
-```
-Dengan ini, perubahan kode di lokal akan langsung teraplikasi di dalam *container* tanpa perlu *rebuild*.
-
-## 2. 🔐 Keamanan & Autentikasi
-**Temuan:**
-- Fitur registrasi dan login telah menggunakan fitur keamanan bawaan Laravel dengan baik (validasi input, pengamanan CSRF dengan `@csrf`, serta enkripsi password menggunakan `Hash::make()`).
-- Implementasi pengecekan login (misal di `UserController@index`) dilakukan secara manual dengan `if (!Auth::check()) { abort(404); }`.
-**Dampak / Saran:**
-Pengecekan manual di dalam *controller* memang memenuhi spesifikasi Anda (mengembalikan 404). Namun secara *best-practice* Laravel, akan lebih rapi dan dapat digunakan ulang (reusable) apabila dibungkus menjadi **Custom Middleware**, lalu di-*assign* ke route di `web.php`.
-
-## 3. ⚙️ Konfigurasi Environment
-**Temuan:**
-Kredensial database (seperti `MYSQL_ROOT_PASSWORD` dan `MYSQL_PASSWORD`) ditulis secara eksplisit (*hardcoded*) di dalam `docker-compose.yaml`.
-**Saran Perbaikan:**
-Untuk lingkungan *development* ini sudah cukup. Namun, hindari *hardcoding* ini jika *project* dipublikasi atau di-*deploy* ke production. Gunakan file `.env` di direktori root yang di-*load* oleh Docker Compose.
-
-## 4. 🎨 Styling dan Tampilan (UI)
-**Temuan:**
-Halaman *Login*, *Register*, dan *List User* menggunakan CSS murni di dalam tag `<style>` masing-masing file Blade, memenuhi kriteria Anda yang melarang penggunaan NPM/Node.js.
-**Saran Perbaikan:**
-Agar tidak terjadi pengulangan kode CSS (seperti *class* `.container`, tombol, alert notifikasi), disarankan untuk mengekstrak kode CSS yang sering digunakan ke dalam satu file terpisah (misalnya `public/css/style.css`), lalu menautkannya di `<head>` semua file view.
+## Overview
+Menambahkan pengujian otomatis (*Unit Test* / *Feature Test*) menggunakan *framework* bawaan Laravel (PHPUnit/Pest) untuk seluruh *endpoint* aplikasi. Hal ini untuk memastikan fungsionalitas utama tetap stabil dan terhindar dari *bug* ketika ada perubahan kode di masa mendatang.
 
 ---
 
-### Kesimpulan
-Secara keseluruhan, *project* sudah berjalan dengan baik dan fungsional sesuai dengan batasan spesifikasi (tanpa NPM, menggunakan MySQL Docker). Prioritas utama perbaikan yang direkomendasikan adalah **penambahan volume mount di Docker Compose** agar pengalaman *coding* Anda menjadi jauh lebih cepat dan nyaman.
+## Lingkup Pengujian (Endpoints)
+
+Pengujian akan difokuskan pada simulasi akses *HTTP request* (*Feature Testing*):
+
+### 1. Halaman Publik
+- **`GET /` (Halaman Utama)**
+  - Mengembalikan status HTTP 200.
+  - Memastikan teks "Hello World" atau "Selamat datang" berhasil dimuat.
+
+### 2. Autentikasi & Registrasi
+- **`GET /register` & `POST /register`**
+  - Halaman registrasi bisa diakses dengan normal.
+  - Proses registrasi sukses bila diisi dengan data valid (data masuk ke database).
+  - Proses registrasi gagal (muncul *error validasi*) bila email sudah terdaftar atau password tidak cocok.
+- **`GET /login` & `POST /login`**
+  - Halaman login bisa diakses dengan normal.
+  - User berhasil masuk dengan kredensial yang valid.
+  - Login ditolak dan memunculkan *error* jika kredensial salah.
+- **`POST /logout`**
+  - Berhasil menghapus *session* login dan mengembalikan user ke rute awal `/`.
+
+### 3. Manajemen Daftar User (Area Terproteksi)
+- **`GET /users` (Daftar User)**
+  - Menolak akses (status 404) bagi pengunjung yang belum login.
+  - Menampilkan daftar tabel user secara normal bagi pengunjung yang sudah login.
+- **`GET /users/{id}/delete` (Hapus User)**
+  - Menolak akses (status 404) bagi pengunjung yang belum login.
+  - Berhasil menghapus akun milik *user* lain dan diarahkan kembali (*redirect*) dengan pesan sukses.
+  - Mengagalkan dan menampilkan pesan *error* apabila *user* mencoba untuk menghapus akun miliknya sendiri.
+
+---
+
+## Kriteria Selesai
+- [ ] Dibuatkan file *test class* untuk `AuthTest` dan `UserFeatureTest` di direktori `tests/Feature/`.
+- [ ] Skrip pengujian berjalan menggunakan basis data dalam memori (SQLite) sehingga cepat dan tidak mengotori *database development/production*.
+- [ ] Komando eksekusi `php artisan test` mengembalikan status *Passed* untuk semua skenario di atas.
