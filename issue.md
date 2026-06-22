@@ -1,61 +1,38 @@
-# 📋 Rencana Fitur Registrasi User
+# 📋 Rencana Fitur Login User
 
 ## Overview
 
-Menambahkan fitur registrasi user ke aplikasi Laravel, dengan penyimpanan data ke database MySQL yang dijalankan via Docker Compose.
+Menambahkan fitur autentikasi (login) user ke aplikasi Laravel menggunakan email dan password yang sudah terdaftar.
 
 ---
 
 ## Lingkup Pekerjaan
 
-### 1. Docker Compose — MySQL + Laravel
+### 1. Controller & Route Login
 
-- Buat `docker-compose.yaml` dengan dua service:
-  - **`db`** — MySQL, expose port internal, dengan volume untuk persistensi data.
-  - **`app`** — Container Laravel (dari `Dockerfile` yang sudah ada), terhubung ke service `db`.
-- Pastikan Laravel dapat terhubung ke MySQL menggunakan nama service sebagai host (e.g. `DB_HOST=db`).
+- Buat `LoginController` dengan dua method:
+  - `showForm()` — menampilkan halaman form login.
+  - `login()` — memproses input (email & password) dan melakukan autentikasi.
+- Tambahkan route `GET /login` dan `POST /login`.
 
-### 2. Konfigurasi Database Laravel
+### 2. Proses Autentikasi
 
-- Update `.env` (atau `.env.example`) dengan kredensial MySQL yang sesuai.
-- Jalankan migration bawaan Laravel untuk membuat tabel `users`.
+- Gunakan fitur autentikasi bawaan Laravel (`Auth::attempt`).
+- **Jika Sukses:** Redirect user ke halaman welcome/home.
+- **Jika Gagal:** Redirect user kembali ke halaman login dan tampilkan pesan error (misal: "Email atau password salah").
 
-### 3. Model & Migration User
+### 3. Halaman Login
 
-- Gunakan model `User` dan migration bawaan Laravel yang sudah tersedia.
-- Pastikan kolom yang digunakan: `name`, `email`, `password` (bcrypt via `Hash::make()`).
-
-### 4. Controller & Route Registrasi
-
-- Buat `RegisterController` dengan dua method:
-  - `showForm()` — menampilkan halaman form registrasi.
-  - `register()` — memvalidasi input, menyimpan user dengan password ter-enkripsi bcrypt.
-- Tambahkan route `GET /register` dan `POST /register`.
-
-### 5. Halaman Registrasi
-
-- Buat view `register.blade.php` dengan form berisi:
-  - Field: Nama Lengkap, Email, Password, Konfirmasi Password.
-  - Tampilkan pesan error validasi jika ada.
-- Styling menggunakan CSS sederhana murni (tanpa npm / build tool).
+- Buat view `login.blade.php` dengan form berisi:
+  - Field: Email dan Password.
+  - Area untuk menampilkan pesan error jika login gagal.
+- Styling menggunakan CSS sederhana murni (tanpa instalasi npm), bisa menggunakan file CSS yang sudah ada atau inline style yang senada dengan halaman registrasi.
 
 ---
 
 ## Kriteria Selesai
 
-- [ ] `docker-compose up` menjalankan MySQL dan Laravel sekaligus.
-- [ ] Laravel berhasil terhubung ke MySQL.
-- [ ] Migration berhasil dijalankan (tabel `users` terbentuk).
-- [ ] Mengakses `/register` menampilkan form registrasi.
-- [ ] Submitting form menyimpan data user ke database.
-- [ ] Password tersimpan dalam format bcrypt (bukan plaintext).
-- [ ] Validasi input berjalan (email unik, password minimal 8 karakter, dll).
-
----
-
-## Catatan
-
-- Tidak ada instalasi frontend via npm.
-- Styling menggunakan CSS murni (inline atau file statis).
-- Gunakan fitur bawaan Laravel: `Hash::make()`, `Validator`, dan migration.
-- Tidak perlu fitur login atau autentikasi sesi untuk scope ini.
+- [ ] Mengakses `/login` menampilkan form login.
+- [ ] Login dengan email dan password yang salah akan kembali ke halaman login dengan pesan error.
+- [ ] Login dengan kredensial yang benar akan mengarahkan user ke halaman welcome/home.
+- [ ] Halaman login menggunakan styling CSS sederhana tanpa npm.
