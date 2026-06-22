@@ -54,6 +54,45 @@
         .link-home:hover {
             text-decoration: underline;
         }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .alert-success {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .btn-delete {
+            display: inline-block;
+            background-color: #ef4444;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .btn-delete:hover {
+            background-color: #dc2626;
+        }
+        .btn-disabled {
+            display: inline-block;
+            background-color: #d1d5db;
+            color: #6b7280;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -61,6 +100,14 @@
         <h1>Daftar Pengguna</h1>
         <p>Berikut adalah daftar pengguna yang telah mendaftar di aplikasi ini.</p>
         
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-error">{{ session('error') }}</div>
+        @endif
+
         <table>
             <thead>
                 <tr>
@@ -68,6 +115,7 @@
                     <th>Nama</th>
                     <th>Email</th>
                     <th>Tanggal Terdaftar</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,6 +125,13 @@
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->created_at->format('d M Y, H:i') }}</td>
+                    <td>
+                        @if(Auth::id() == $user->id)
+                            <span class="btn-disabled">Anda</span>
+                        @else
+                            <a href="/users/{{ $user->id }}/delete" class="btn-delete" onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?');">Hapus</a>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </tbody>

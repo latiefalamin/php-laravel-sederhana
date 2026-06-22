@@ -18,3 +18,4 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/users', [UserController::class, 'index']);
+Route::get('/users/{id}/delete', [UserController::class, 'destroy']);

@@ -1,42 +1,40 @@
-# 📋 Rencana Fitur List User
+# 📋 Rencana Fitur Hapus User
 
 ## Overview
 
-Menambahkan halaman untuk menampilkan daftar pengguna yang sudah melakukan registrasi di aplikasi. Halaman ini diproteksi hanya untuk user yang sudah login, dan akan mengembalikan error 404 bagi user yang belum login.
+Menambahkan fungsionalitas untuk menghapus pengguna dari aplikasi. Fitur ini hanya bisa diakses oleh user yang sudah login melalui halaman daftar user, dengan proteksi agar user tidak dapat menghapus akun miliknya sendiri.
 
 ---
 
 ## Lingkup Pekerjaan
 
-### 1. Middleware Proteksi Akses
+### 1. Controller & Route
 
-- Buat/gunakan *middleware* untuk mengecek status autentikasi user saat mengakses halaman list user.
-- **Logika Middleware:** Jika user belum login, lemparkan error 404 (Not Found) menggunakan fungsi bantuan Laravel (`abort(404)`).
+- Tambahkan method `destroy($id)` di dalam `UserController`.
+- **Logika Hapus:**
+  - Cek apakah `$id` yang akan dihapus sama dengan ID user yang sedang aktif login (`Auth::id()`).
+  - Jika **sama**, proses dibatalkan dan redirect kembali dengan pesan error (misal: "Anda tidak dapat menghapus akun Anda sendiri").
+  - Jika **berbeda**, hapus data user dari database dan redirect kembali dengan pesan sukses.
+- Tambahkan route `GET /users/{id}/delete` yang mengarah ke `UserController@destroy`.
+- Pastikan route ini diproteksi menggunakan pengecekan autentikasi (middleware atau pengecekan di controller).
 
-### 2. Controller & Route
+### 2. Update Tampilan Halaman List User (`users.blade.php`)
 
-- Buat `UserController` dengan satu method (misalnya `index()`).
-- Di dalam method `index()`, ambil semua data user dari database menggunakan model `User::all()` (atau pagination).
-- Tambahkan route `GET /users` yang diarahkan ke method `index()` pada `UserController` dan terapkan *middleware* yang dibuat pada langkah pertama.
+- Tambahkan kolom baru bernama "Aksi" pada tabel.
+- Berikan tombol/link "Hapus" untuk setiap data user yang mengarah ke endpoint `GET /users/{id}/delete`.
+- Terapkan fungsi `onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?');"` pada tombol untuk menampilkan dialog konfirmasi bawaan browser sebelum *request* dijalankan.
+- Sembunyikan atau nonaktifkan tombol hapus pada baris data milik user yang sedang login saat ini.
 
-### 3. Tampilan Halaman (View)
+### 3. Penanganan Pesan (Flash Message)
 
-- Buat *view* `users.blade.php`.
-- Tampilkan data user dalam bentuk tabel sederhana (Nama, Email, Tanggal Terdaftar).
-- Gunakan style CSS dasar (murni tanpa instalasi npm) yang senada dengan halaman lain.
-- Tambahkan tombol navigasi untuk kembali ke halaman utama.
-
-### 4. Navigasi
-
-- Perbarui `home.blade.php`.
-- Tambahkan tombol/link ke "Daftar User" yang hanya terlihat saat user sudah berhasil login.
+- Tambahkan area *alert*/notifikasi sederhana di atas tabel daftar user untuk menangkap dan menampilkan *flash message* (pesan sukses maupun error) hasil dari proses penghapusan.
 
 ---
 
 ## Kriteria Selesai
 
-- [ ] Route `/users` berhasil dibuat.
-- [ ] Mengakses `/users` saat belum login akan memunculkan halaman 404.
-- [ ] Mengakses `/users` saat sudah login akan menampilkan tabel berisi daftar nama dan email user.
-- [ ] Halaman menggunakan CSS statis yang rapi tanpa perlu Node/npm.
-- [ ] Terdapat link di halaman utama untuk menuju halaman `/users`.
+- [ ] Terdapat route `GET /users/{id}/delete` yang menangani proses penghapusan.
+- [ ] Tombol "Hapus" tersedia di tabel halaman `/users`.
+- [ ] Dialog konfirmasi muncul sebelum menghapus data.
+- [ ] Menghapus data akan me-redirect kembali ke `/users` dengan pesan sukses.
+- [ ] Mencoba menghapus akun yang sedang login akan gagal dan menampilkan pesan error.
