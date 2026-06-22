@@ -16,4 +16,16 @@ class UserController extends Controller
         $users = User::all();
         return view('users', compact('users'));
     }
+
+    public function destroy($id)
+    {
+        if (Auth::id() == $id) {
+            return redirect()->back()->withErrors(['error' => 'Anda tidak bisa menghapus diri sendiri.']);
+        }
+
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect('/users');
+    }
 }

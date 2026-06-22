@@ -11,6 +11,10 @@
         <h1>Daftar Pengguna</h1>
         <p>Berikut adalah daftar pengguna yang telah mendaftar di aplikasi ini.</p>
         
+        @if($errors->has('error'))
+            <div class="alert-error">{{ $errors->first('error') }}</div>
+        @endif
+        
         <table>
             <thead>
                 <tr>
@@ -18,6 +22,7 @@
                     <th>Nama</th>
                     <th>Email</th>
                     <th>Tanggal Terdaftar</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,6 +32,13 @@
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->created_at->format('d M Y, H:i') }}</td>
+                    <td>
+                        @if(Auth::id() == $user->id)
+                            <button class="btn-disabled" disabled>Hapus</button>
+                        @else
+                            <a href="/users/{{ $user->id }}/delete" class="btn-delete" onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?')">Hapus</a>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
