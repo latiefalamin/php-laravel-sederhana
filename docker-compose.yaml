@@ -3,11 +3,8 @@ services:
     image: mysql:8.0
     container_name: laravel-mysql
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: secret
+    env_file:
+      - .env
     volumes:
       - db_data:/var/lib/mysql
     ports:
@@ -24,6 +21,8 @@ services:
       dockerfile: Dockerfile
     container_name: laravel-app
     restart: unless-stopped
+    volumes:
+      - ./app:/var/www/html
     ports:
       - "8080:80"
     environment:
@@ -32,9 +31,9 @@ services:
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
-      DB_DATABASE: laravel
-      DB_USERNAME: laravel
-      DB_PASSWORD: secret
+      DB_DATABASE: ${MYSQL_DATABASE:-laravel}
+      DB_USERNAME: ${MYSQL_USER:-laravel}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-secret}
       SESSION_DRIVER: file
       CACHE_STORE: file
       QUEUE_CONNECTION: sync

@@ -13,10 +13,6 @@ class UserController extends Controller
      */
     public function index()
     {
-        if (!Auth::check()) {
-            abort(404);
-        }
-
         $users = User::all();
         return view('users', compact('users'));
     }
