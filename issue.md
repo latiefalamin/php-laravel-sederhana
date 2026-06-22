@@ -1,42 +1,43 @@
-# 📋 Rencana Fitur List User
+# 📋 Rencana Pengujian Otomatis (Unit/Feature Test)
 
 ## Overview
-
-Menambahkan halaman untuk menampilkan daftar pengguna yang sudah melakukan registrasi di aplikasi. Halaman ini diproteksi hanya untuk user yang sudah login, dan akan mengembalikan error 404 bagi user yang belum login.
+Menambahkan pengujian otomatis (*Unit Test* / *Feature Test*) menggunakan *framework* bawaan Laravel (PHPUnit/Pest) untuk seluruh *endpoint* aplikasi. Hal ini untuk memastikan fungsionalitas utama tetap stabil dan terhindar dari *bug* ketika ada perubahan kode di masa mendatang.
 
 ---
 
-## Lingkup Pekerjaan
+## Lingkup Pengujian (Endpoints)
 
-### 1. Middleware Proteksi Akses
+Pengujian akan difokuskan pada simulasi akses *HTTP request* (*Feature Testing*):
 
-- Buat/gunakan *middleware* untuk mengecek status autentikasi user saat mengakses halaman list user.
-- **Logika Middleware:** Jika user belum login, lemparkan error 404 (Not Found) menggunakan fungsi bantuan Laravel (`abort(404)`).
+### 1. Halaman Publik
+- **`GET /` (Halaman Utama)**
+  - Mengembalikan status HTTP 200.
+  - Memastikan teks "Hello World" atau "Selamat datang" berhasil dimuat.
 
-### 2. Controller & Route
+### 2. Autentikasi & Registrasi
+- **`GET /register` & `POST /register`**
+  - Halaman registrasi bisa diakses dengan normal.
+  - Proses registrasi sukses bila diisi dengan data valid (data masuk ke database).
+  - Proses registrasi gagal (muncul *error validasi*) bila email sudah terdaftar atau password tidak cocok.
+- **`GET /login` & `POST /login`**
+  - Halaman login bisa diakses dengan normal.
+  - User berhasil masuk dengan kredensial yang valid.
+  - Login ditolak dan memunculkan *error* jika kredensial salah.
+- **`POST /logout`**
+  - Berhasil menghapus *session* login dan mengembalikan user ke rute awal `/`.
 
-- Buat `UserController` dengan satu method (misalnya `index()`).
-- Di dalam method `index()`, ambil semua data user dari database menggunakan model `User::all()` (atau pagination).
-- Tambahkan route `GET /users` yang diarahkan ke method `index()` pada `UserController` dan terapkan *middleware* yang dibuat pada langkah pertama.
-
-### 3. Tampilan Halaman (View)
-
-- Buat *view* `users.blade.php`.
-- Tampilkan data user dalam bentuk tabel sederhana (Nama, Email, Tanggal Terdaftar).
-- Gunakan style CSS dasar (murni tanpa instalasi npm) yang senada dengan halaman lain.
-- Tambahkan tombol navigasi untuk kembali ke halaman utama.
-
-### 4. Navigasi
-
-- Perbarui `home.blade.php`.
-- Tambahkan tombol/link ke "Daftar User" yang hanya terlihat saat user sudah berhasil login.
+### 3. Manajemen Daftar User (Area Terproteksi)
+- **`GET /users` (Daftar User)**
+  - Menolak akses (status 404) bagi pengunjung yang belum login.
+  - Menampilkan daftar tabel user secara normal bagi pengunjung yang sudah login.
+- **`GET /users/{id}/delete` (Hapus User)**
+  - Menolak akses (status 404) bagi pengunjung yang belum login.
+  - Berhasil menghapus akun milik *user* lain dan diarahkan kembali (*redirect*) dengan pesan sukses.
+  - Mengagalkan dan menampilkan pesan *error* apabila *user* mencoba untuk menghapus akun miliknya sendiri.
 
 ---
 
 ## Kriteria Selesai
-
-- [ ] Route `/users` berhasil dibuat.
-- [ ] Mengakses `/users` saat belum login akan memunculkan halaman 404.
-- [ ] Mengakses `/users` saat sudah login akan menampilkan tabel berisi daftar nama dan email user.
-- [ ] Halaman menggunakan CSS statis yang rapi tanpa perlu Node/npm.
-- [ ] Terdapat link di halaman utama untuk menuju halaman `/users`.
+- [ ] Dibuatkan file *test class* untuk `AuthTest` dan `UserFeatureTest` di direktori `tests/Feature/`.
+- [ ] Skrip pengujian berjalan menggunakan basis data dalam memori (SQLite) sehingga cepat dan tidak mengotori *database development/production*.
+- [ ] Komando eksekusi `php artisan test` mengembalikan status *Passed* untuk semua skenario di atas.
