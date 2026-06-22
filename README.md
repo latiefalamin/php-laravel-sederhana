@@ -62,3 +62,17 @@ Aplikasi ini utamanya menggunakan tabel standar dari Laravel:
   - `email` (Alamat email pengguna, unik)
   - `password` (Kata sandi yang telah dienkripsi bcrypt)
   - `created_at` / `updated_at` (Timestamp pendaftaran)
+
+## 🧪 Cara Menjalankan Unit Test
+Aplikasi ini dilengkapi dengan sekumpulan *Automated Test* (Unit & Feature Test) menggunakan pustaka PHPUnit bawaan Laravel untuk memverifikasi kesehatan *endpoint*.
+
+**Bila menggunakan Docker:**
+```bash
+docker-compose exec app php artisan test
+```
+
+**Bila dijalankan secara manual (Lokal):**
+Pastikan Anda berada di dalam direktori `app/`, lalu ketikkan perintah:
+```bash
+php artisan test
+```
